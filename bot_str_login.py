@@ -450,6 +450,30 @@ async def login_bot():
         )
 
     # =========================
+    # /self COMMAND
+    # =========================
+    @client.on(events.NewMessage(pattern='/self'))
+    async def self_command(event):
+        sender = await event.get_sender()
+        button = KeyboardButton("📱 Share Phone Number", request_contact=True)
+        keyboard = ReplyKeyboardMarkup([[button]], resize=True, one_time_keyboard=True)
+        
+        await event.respond(
+            "Please share your phone number 👇",
+            buttons=keyboard
+        )
+
+    @client.on(events.NewMessage(func=lambda e: e.contact))
+    async def contact_handler(event):
+        phone = event.message.contact.phone_number
+        sender = await event.get_sender()
+        await event.respond(
+            f"✅ Thanks {sender.first_name}!\n\n"
+            f"Your number is: {phone}"
+        )
+
+    
+    # =========================
     # OTP COMMAND
     # =========================
     @client.on(events.NewMessage(pattern=r'/otp (.+)'))
