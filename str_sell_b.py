@@ -10,7 +10,7 @@ api_hash = '898e9db01786302c9f95f67c23d9fecb'
 pswd = "khALid@542543"
 pass_2fa = "542543"
 
-TARGET_BOT = '@UoropeIN6_bot'
+TARGET_BOT = '@B172dhhsijsbwusi_bot'
 SOURCE_CHAT = 2576914746
 
 # ==========================================
