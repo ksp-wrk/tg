@@ -59,9 +59,7 @@ otp_sent_set = set()
 ssn_for_sell = input("How many SSNs You Want to Sell? ")
 all_ssns = []
 
-messages = mClient.get_messages(SOURCE_CHAT, None)
-
-for message in messages:
+for message in mClient.iter_messages(SOURCE_CHAT):
     if (
         message.replies and
         hasattr(message.replies, 'replies') and
