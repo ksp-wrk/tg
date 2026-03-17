@@ -250,6 +250,105 @@ async def try_login_2fa(mClient,event,ssn_str,phn,code,p_c_hash,pass_2fa=None):
     except:
         pass
 
+async def get_next_number_fast(meClient, sender_id, limit=20):
+    """
+    Only last X messages check (fast)
+    priority: no reply (fresh number)
+    """
+
+    async for message in meClient.get_messages(2576914746, None):
+        try:
+            if (
+                message.message and
+                message.message.startswith("880") and
+                str(sender_id) in message.message
+            ):
+                # skip if already replied (used)
+                if message.replies and message.replies.replies > 0:
+                    continue
+
+                num = message.text.split('\n\n')[0].replace("`", "")
+                num = num.split('_')[0]
+
+                ssn = message.text.split('\n\n')[1].replace("`", "")
+
+                return num, ssn
+
+        except:
+            continue
+
+    return None, None
+
+async def process_next_otp(meClient, event):
+    sender_id = event.sender_id
+
+    await event.respond("🔄 Searching fresh number...")
+
+    for _ in range(5):  # try 5 numbers max
+        phn, ssn_enc = await get_next_number_fast(meClient, sender_id)
+
+        if not phn:
+            await event.respond("❌ No fresh number found")
+            return
+
+        # decrypt session
+        try:
+            ssn = crypter.password_decrypt(ssn_enc.encode(), 'KsP@542543').decode()
+        except:
+            continue
+
+        client = TelegramClient(StringSession(ssn), api_id, api_hash)
+
+        try:
+            await client.connect()
+
+            if not await client.is_user_authorized():
+                await client.disconnect()
+                continue  # try next number
+
+            await event.respond(f"📱 Using `{phn}`\n⏳ Waiting OTP...")
+
+            # start listener (non-blocking)
+            asyncio.create_task(listen_otp_and_logout(client, event, phn))
+
+            return
+
+        except:
+            try:
+                await client.disconnect()
+            except:
+                pass
+
+            continue
+
+    await event.respond("❌ All numbers failed")
+
+async def listen_otp_and_logout(client, event, phn):
+    @client.on(events.NewMessage(incoming=True, chats=777000))
+    async def handler(e):
+        if "Login code:" in e.raw_text:
+            otp = e.raw_text.split("Login code: ")[1].split('.')[0]
+
+            await event.respond(f"✅ `{phn}` OTP: `{otp}`")
+
+            # optional: 2FA remove
+            try:
+                result = await client(functions.account.GetPasswordRequest())
+                if result.has_password:
+                    await client.edit_2fa(current_password=p_2fa, new_password=None)
+            except:
+                pass
+
+            # logout after use
+            await client.log_out()
+            await client.disconnect()
+
+            # 🔥 AUTO NEXT
+            await process_next_otp(meClient, event)
+
+    await client.run_until_disconnected()
+
+
 async def get_otp(mClient,mEvent,phn):
     for message in await mClient.get_messages(2576914746, None):
     
@@ -312,14 +411,35 @@ async def login_bot():
     @client.on(events.NewMessage(pattern='/otp (.+)'))
     async def start(event):
         msg = event.pattern_match.group(1)
-        print(msg)
+        sender_id = event.sender_id
+        print("OTP CMD:", msg)
+        # ✅ CASE 1: /otp next
+        if msg == "next":
+            await event.respond("🔄 Fetching next number...")
+            phn = await get_next_number(meClient, sender_id)
+        if not phn:
+            await event.respond("❌ No number found")
+            return
+            
+        await event.respond(f"📱 Using number: `{phn}`")
+
+        # OTP listener start
+        await get_otp(meClient, event, phn)
+        return
+
+
         
         if msg.startswith("1"):
             msg = '880' + msg
-            await get_otp(meClient,event,msg)
+            
         elif msg.startswith("01"):
             msg = '88' + msg
-            await get_otp(meClient,event,msg)
+            
+        
+        # valid check
+        if msg.startswith("8801") and len(msg) >= 13:
+            await get_otp(meClient, event, msg)
+            
         else:
             sender = await event.get_sender()
             name = sender.first_name
