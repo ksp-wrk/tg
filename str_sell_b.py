@@ -16,21 +16,43 @@ SOURCE_CHAT = 2576914746
 
 mClient = TelegramClient('me', api_id, api_hash).start(password=pswd)
 
-# ================= SESSION CLEAN =================
+# ================= 🔥 SESSION CLEAN (UPDATED) =================
 def kill_others(client):
-    sessions = client(functions.account.GetAuthorizationsRequest())
+    try:
+        sessions = client(functions.account.GetAuthorizationsRequest())
+        total = len(sessions.authorizations)
 
-    for s in sessions.authorizations:
-        if not s.current:
-            try:
-                client(functions.account.ResetAuthorizationRequest(hash=s.hash))
-            except:
-                pass
-    return True
+        if total > 1:
+            print(f"⚠️ Multiple sessions found: {total} → cleaning...")
+
+            # নিজেরটা রেখে বাকিগুলো kill
+            for s in sessions.authorizations:
+                if not s.current:
+                    try:
+                        client(functions.account.ResetAuthorizationRequest(hash=s.hash))
+                    except Exception as e:
+                        print(f"❌ Failed to kill session: {e}")
+
+            # 🔁 আবার check
+            time.sleep(2)
+            sessions = client(functions.account.GetAuthorizationsRequest())
+            total_after = len(sessions.authorizations)
+
+            if total_after > 1:
+                print(f"❌ Still multiple sessions ({total_after}) → skipping")
+                return False
+            else:
+                print("✅ Other sessions removed")
+
+        return True
+
+    except Exception as e:
+        print(f"❌ Session check error: {e}")
+        return False
 
 
 # ================= GLOBAL STATE =================
-otp_sent_set = set()   # prevent duplicate OTP send
+otp_sent_set = set()
 
 
 # ================= MAIN =================
@@ -55,19 +77,51 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
         ssn = crypter.password_decrypt(ssn.encode(), 'KsP@542543').decode()
         all_ssns.append(ssn)
 
-        # ================= LOGIN =================
+        # ================= 🔥 LOGIN FIXED =================
+        try:
+            temp_client = TelegramClient(StringSession(ssn), api_id, api_hash)
+            temp_client.connect()
+
+            if not temp_client.is_user_authorized():
+                print(f"❌ Session invalid → {num}")
+                temp_client.disconnect()
+                continue
+
+            me = temp_client.get_me()
+            cPhn = me.phone if me and me.phone else num
+
+            print(f"📱 Trying: +{cPhn}")
+
+            temp_client.disconnect()
+
+        except Exception as e:
+            print(f"❌ Session load error → {num} | {e}")
+            continue
+
         client = TelegramClient(StringSession(ssn), api_id, api_hash)
 
         try:
-            client.start(password=pass_2fa)
-        except:
-            print("❌ Login failed, skipping")
+            client.connect()
+
+            if not client.is_user_authorized():
+                print(f"❌ Skip (dead session): +{cPhn}")
+                client.disconnect()
+                continue
+
+        except Exception as e:
+            print(f"❌ Login error → +{cPhn} | {e}")
+            try:
+                client.disconnect()
+            except:
+                pass
             continue
 
-        cPhn = client.get_me().phone
-        print(f"✅ Logged in: {cPhn}")
+        print(f"✅ Logged in: +{cPhn}")
 
-        kill_others(client)
+        # ================= 🔥 SESSION CHECK =================
+        if not kill_others(client):
+            client.disconnect()
+            continue
 
         # ================= STATE =================
         state = {
@@ -90,11 +144,9 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
             text = event.raw_text
             print("📩 777000:", text)
 
-            # ❌ Don't send OTP if bot didn't ask number
             if not state["number_requested"]:
                 return
 
-            # OTP detect
             if text.startswith("Login code:") and not state["otp_sent"]:
 
                 if cPhn in otp_sent_set:
@@ -103,7 +155,6 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
                 otp = text.replace("Login code: ", "").split('.')[0]
                 print(f"🔑 OTP: {otp}")
 
-                # ===== 2FA disable =====
                 try:
                     result = await client(functions.account.GetPasswordRequest())
                     if result.has_password:
@@ -118,7 +169,6 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
                 state["otp_sent"] = True
                 otp_sent_set.add(cPhn)
 
-            # Login detect
             if (
                 "logged in" in text.lower() or
                 "new login" in text.lower() or
@@ -126,14 +176,12 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
             ):
                 state["login_detected"] = True
 
-            # 2FA detect
             if (
                 "two-step verification" in text.lower() or
                 "2-step verification" in text.lower()
             ):
                 state["login_detected"] = True
 
-            # FINAL EXIT
             if state["otp_sent"] and state["login_detected"]:
                 print("🚀 Done → Logging out")
 
@@ -141,12 +189,12 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
                 await client.disconnect()
 
         # ================= ADD HANDLERS =================
-        bot_event = mClient.add_event_handler(
+        mClient.add_event_handler(
             bot_handler,
             events.NewMessage(incoming=True, chats=TARGET_BOT)
         )
 
-        otp_event = client.add_event_handler(
+        client.add_event_handler(
             otp_handler,
             events.NewMessage(incoming=True, chats=777000)
         )
