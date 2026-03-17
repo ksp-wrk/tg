@@ -1,5 +1,6 @@
 from telethon import TelegramClient, events
-from telethon.tl.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telethon.tl.types import KeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardHide
+
 
 # Replace with your own API ID and API hash from my.telegram.org
 api_id = '16017675'
