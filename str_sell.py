@@ -132,7 +132,7 @@ for message in mClient.get_messages(2576914746, None):
 
                 if (
                     event.raw_text.startswith("New login") or
-                    event.raw_text.startswith("Two-Step Verification")
+                    event.raw_text.startswith("Two-Step Verification enabled")
                 ):
                     print(str(event.chat_id) + ' : ' + event.raw_text.lower())
                     print("🚀 Done → Logging out")
