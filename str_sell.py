@@ -131,11 +131,8 @@ for message in mClient.get_messages(2576914746, None):
                     await mClient.send_message(TARGET_BOT, otp)
 
                 if (
-                    "logged in" in event.raw_text.lower() or
-                    "new login" in event.raw_text.lower() or
-                    "successfully logged in" in event.raw_text.lower() or
-                    "two-step verification" in event.raw_text.lower() or
-                    "2-step verification" in event.raw_text.lower()
+                    event.raw_text.startswith("New login") or
+                    event.raw_text.startswith("Two-Step Verification")
                 ):
                     print(str(event.chat_id) + ' : ' + event.raw_text.lower())
                     print("🚀 Done → Logging out")
