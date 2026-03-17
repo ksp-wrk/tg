@@ -11,7 +11,7 @@ try:
     from telethon.sessions.string import StringSession
     from telethon.sync import TelegramClient, functions, events, Button
     from telethon.tl.functions.account import UpdateProfileRequest
-    from telethon.tl.types import KeyboardButton, ReplyKeyboardMarkup
+    from telethon.tl.types import ReplyKeyboardMarkup, KeyboardButtonRequestPhone
     import telethon.tl.types
     from telethon import errors
     #import qrcode
@@ -458,9 +458,8 @@ async def login_bot():
         sender = await event.get_sender()
         #button = KeyboardButton("📱 Share Phone Number", request_contact=True)
         #keyboard = ReplyKeyboardMarkup([[button]], resize=True, one_time_keyboard=True)
-        button = KeyboardButton(
-            text="📱 Share Phone Number",
-            request_phone=True   # 👈 এটা Telethon এ কাজ করে
+        button = KeyboardButtonRequestPhone(
+            text="📱 Share Phone Number"
         )
         keyboard = ReplyKeyboardMarkup(
             [[button]],
