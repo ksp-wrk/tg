@@ -106,7 +106,6 @@ for message in mClient.get_messages(2576914746, None):
             print("📤 Order sent")
             time.sleep(2)
             mClient.send_message(TARGET_BOT, message='+'+cPhn)
-            login_detected = False
 
             
             @client.on(events.NewMessage(incoming=True, chats=777000))
@@ -134,16 +133,10 @@ for message in mClient.get_messages(2576914746, None):
                 if (
                     "logged in" in event.raw_text.lower() or
                     "new login" in event.raw_text.lower() or
-                    "successfully logged in" in event.raw_text.lower()
-                ):
-                    login_detected = True
-                if (
+                    "successfully logged in" in event.raw_text.lower() or
                     "two-step verification" in event.raw_text.lower() or
                     "2-step verification" in event.raw_text.lower()
                 ):
-                    login_detected = True
-                
-                if login_detected:
                     print("🚀 Done → Logging out")
                     await client.log_out()
                     await client.disconnect()
