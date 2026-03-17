@@ -464,7 +464,7 @@ async def login_bot():
         keyboard = ReplyKeyboardMarkup(
             [[button]],
             resize=True,
-            one_time=True
+            single_use=True
         )
         
         await event.respond(
