@@ -72,7 +72,7 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
         print("📤 Order sent")
 
         # ================= BOT REPLY HANDLER =================
-        @client.on(events.NewMessage(incoming=True))
+        @mClient.on(events.NewMessage(incoming=True, chats=TARGET_BOT))
         async def bot_handler(event):
             text = event.raw_text
 
