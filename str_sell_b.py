@@ -84,7 +84,7 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
         # ================= OTP + LOGIN DETECT =================
         @client.on(events.NewMessage(incoming=True, chats=777000))
         async def otp_handler(event):
-            nonlocal otp_sent, login_detected
+            global otp_sent, login_detected
 
             text = event.raw_text
             print("📩 777000:", text)
