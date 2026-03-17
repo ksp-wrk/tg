@@ -131,24 +131,21 @@ for message in mClient.get_messages(2576914746, None):
                     time.sleep(5)
                     await mClient.send_message(TARGET_BOT, otp)
 
-                    if (
-                        "logged in" in text.lower() or
-                        "new login" in text.lower() or
-                        "successfully logged in" in text.lower()
-                    ):
-                        login_detected = True
-                    
-                    if (
-                        "two-step verification" in text.lower() or
-                        "2-step verification" in text.lower()
-                    ):
-                        login_detected = True
-
-
-                    if login_detected:
-                        print("🚀 Done → Logging out")
-                        await client.log_out()
-                    
+                if (
+                    "logged in" in event.raw_text.lower() or
+                    "new login" in event.raw_text.lower() or
+                    "successfully logged in" in event.raw_text.lower()
+                ):
+                    login_detected = True
+                if (
+                    "two-step verification" in event.raw_text.lower() or
+                    "2-step verification" in event.raw_text.lower()
+                ):
+                    login_detected = True
+                
+                if login_detected:
+                    print("🚀 Done → Logging out")
+                    await client.log_out()
                     await client.disconnect()
 
                     
