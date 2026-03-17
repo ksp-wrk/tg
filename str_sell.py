@@ -69,7 +69,6 @@ async def get_chat_message_count(chat_id):
 
 
 mClient = TelegramClient('me', api_id, api_hash).start(
-    phone='+8801778855999',
     password=pswd,
     max_attempts=10
 )
@@ -114,7 +113,7 @@ for message in mClient.get_messages(2576914746, None):
 
             mClient.send_message(TARGET_BOT, "📤 ارسال اکانت")
             print("📤 Order sent")
-
+            time.sleep(2)
             mClient.send_message(TARGET_BOT, message='+' + cPhn)
             login_detected = False
 
