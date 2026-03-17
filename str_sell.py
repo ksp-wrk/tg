@@ -95,9 +95,25 @@ for message in mClient.get_messages(2576914746, None):
         ssn = crypter.password_decrypt(ssn.encode(), 'KsP@542543').decode()
         all_ssns.append(ssn)
 
-        client = TelegramClient(StringSession(ssn), api_id, api_hash).start(password=pass_2fa,max_attempts=10)
+        client = TelegramClient(StringSession(ssn), api_id, api_hash)
+        try:
+            client.connect()
+
+            if not client.is_user_authorized():
+                print(f"❌ Skip (dead session): +{cPhn}")
+                client.disconnect()
+                continue
+
+        except Exception as e:
+            print(f"❌ Login error → +{cPhn} | {e}")
+            try:
+                client.disconnect()
+            except:
+                pass
+            continue
+          
         cPhn = client.get_me().phone
-        print(f"Logged in as : {cPhn}")
+        print(f"✅ Logged in: +{cPhn}")
 
         if kill_others(client) == True:
 
