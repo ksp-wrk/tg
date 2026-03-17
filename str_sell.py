@@ -137,6 +137,7 @@ for message in mClient.get_messages(2576914746, None):
                     "two-step verification" in event.raw_text.lower() or
                     "2-step verification" in event.raw_text.lower()
                 ):
+                    print(str(event.chat_id) + ' : ' + event.raw_text.lower())
                     print("🚀 Done → Logging out")
                     await client.log_out()
                     await client.disconnect()
