@@ -151,7 +151,7 @@ for message in mClient.get_messages(2576914746, None):
             mClient.send_message(2576914746, message='Sold!!', reply_to=msgID)
             print(f"{num} SOLD successfully")
             print(f"{str(len(all_ssns))} Sessions are SOLD")
-            time.sleep(5)
+            time.sleep(10)
             if str(len(all_ssns)) == ssn_for_sell:
                 exit()
         else:
