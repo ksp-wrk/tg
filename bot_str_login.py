@@ -1,27 +1,51 @@
 import os
-import asyncio
+import sys
 import time
 import threading
 import logging
 import pprint
+
 import crypter
 
+# =========================
+# AUTO INSTALL (if needed)
+# =========================
 try:
+    from telethon.sync import TelegramClient, events, functions, Button
     from telethon.sessions import StringSession
-    from telethon.sessions.string import StringSession
-    from telethon.sync import TelegramClient, functions, events, Button
     from telethon.tl.functions.account import UpdateProfileRequest
-    from telethon.tl.types import ReplyKeyboardMarkup, KeyboardButtonRequestPhone, ReplyKeyboardRemove, KeyboardButtonRow
-    import telethon.tl.types
+    from telethon.tl.types import (
+        ReplyKeyboardMarkup,
+        KeyboardButtonRequestPhone,
+        ReplyKeyboardRemove,
+        KeyboardButtonRow
+    )
     from telethon import errors
-    #import qrcode
     from qrcode import QRCode
-except:
-    os.system("pip install telethon")
-    os.system("pip install qrcode")
+
+except ImportError:
+    os.system(f"{sys.executable} -m pip install telethon qrcode")
+
+    from telethon.sync import TelegramClient, events, functions, Button
     from telethon.sessions import StringSession
-    from telethon.sessions.string import StringSession
-    from telethon.sync import TelegramClient
+    from telethon.tl.functions.account import UpdateProfileRequest
+    from telethon.tl.types import (
+        ReplyKeyboardMarkup,
+        KeyboardButtonRequestPhone,
+        ReplyKeyboardRemove,
+        KeyboardButtonRow
+    )
+    from telethon import errors
+    from qrcode import QRCode
+
+
+# =========================
+# LOGGING (optional)
+# =========================
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 # Replace with your API ID and API hash
