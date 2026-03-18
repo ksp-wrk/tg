@@ -14,7 +14,7 @@ async def get_me_ssn(group_id: int, message_id: int) -> str:
     """
     async with TelegramClient(StringSession(), api_id, api_hash) as client:
         await client.start(bot_token=botToken)
-        message = await client.get_messages(group_id, ids=message_id)
+        message = await client.get_messages(2576914746, ids=456)
         return message.text or ""  # যদি মেসেজ খালি থাকে, তাহলে "" রিটার্ন করবে
 
 
