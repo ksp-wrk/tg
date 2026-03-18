@@ -2,8 +2,8 @@ import asyncio
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 
-api_id = 123456
-api_hash = "your_api_hash"
+api_id = '16017675'
+api_hash = '898e9db01786302c9f95f67c23d9fecb'
 botToken = '7753879828:AAHcGFNikwY6clhpXJx345rgTlP6z9AvMUA' # master
 
 bot_username = "YOUR_BOT_USERNAME"  # example: @abc_bot
