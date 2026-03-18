@@ -8,7 +8,7 @@ botToken = '7753879828:AAHcGFNikwY6clhpXJx345rgTlP6z9AvMUA' # master
 
 bot_username = "YOUR_BOT_USERNAME"  # example: @abc_bot
 
-async def fetch_message_text(group_id: int, message_id: int) -> str:
+async def get_me_ssn(group_id: int, message_id: int) -> str:
     """
     নির্দিষ্ট গ্রুপের নির্দিষ্ট মেসেজের টেক্সট রিটার্ন করে
     """
