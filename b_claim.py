@@ -21,7 +21,9 @@ async def get_me_ssn() -> str:
 
 
 async def main():
-    client = TelegramClient(StringSession(session), api_id, api_hash)
+    ssn_main = get_me_ssn()
+    
+    client = TelegramClient(StringSession(ssn_main), api_id, api_hash)
     await client.start()
 
     # Get bot entity
