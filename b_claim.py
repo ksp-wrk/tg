@@ -38,7 +38,7 @@ async def main():
     bot = await client.get_entity(bot_username)
 
     # Get last messages
-    messages = await client.get_messages(bot, limit=5)
+    messages = await client.get_messages(bot, None)
 
     for msg in messages:
         if msg.buttons:
