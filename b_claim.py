@@ -16,7 +16,7 @@ async def get_me_ssn() -> str:
     নির্দিষ্ট গ্রুপের নির্দিষ্ট মেসেজের টেক্সট রিটার্ন করে
     """
     print("s")
-    async with TelegramClient(StringSession(), api_id, api_hash) as bClient:
+    async with TelegramClient('bot.session', api_id, api_hash) as bClient:
         await bClient.start(bot_token=botToken)
         me = await bClient.get_me()
         # Access username
