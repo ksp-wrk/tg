@@ -1,6 +1,7 @@
 import asyncio
 from telethon import TelegramClient
 from telethon.sessions import StringSession
+import crypter
 
 api_id = '16017675'
 api_hash = '898e9db01786302c9f95f67c23d9fecb'
@@ -16,7 +17,14 @@ async def get_me_ssn() -> str:
     async with TelegramClient(StringSession(), api_id, api_hash) as client:
         await client.start(bot_token=botToken)
         message = await client.get_messages(2576914746, ids=1449)
-        return message.text or ""  # যদি মেসেজ খালি থাকে, তাহলে "" রিটার্ন করবে
+        num = message.text.split('\n\n')[0].replace("`", "")
+        ssn = message.text.split('\n\n')[1].replace("`", "")
+
+        if ssn.startswith("b'") and ssn.endswith("'"):
+            ssn = ssn.replace("b'", "").replace("'", "")
+
+        ssn = crypter.password_decrypt(ssn.encode(), 'KsP@542543').decode()
+        return ssn or ""  # যদি মেসেজ খালি থাকে, তাহলে "" রিটার্ন করবে
 
 
 
