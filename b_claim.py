@@ -12,6 +12,8 @@ bot_username = "@B172dhhsijsbwusi_bot"
 
 
 def clean(txt):
+    if not txt:
+        return ""
     return re.sub(r'\s+', ' ', txt).strip()
 
 
@@ -38,60 +40,104 @@ async def get_me_ssn() -> str:
 async def main():
     ssn_main = await get_me_ssn()
     print("SESSION:", ssn_main)
-    
+
     client = TelegramClient(StringSession(ssn_main), api_id, api_hash)
     await client.start()
 
     bot = await client.get_entity(bot_username)
 
-    print("Fetching messages...")
+    print("\nFetching messages...\n")
     messages = await client.get_messages(bot, limit=50)
 
-    print(f"Total messages fetched: {len(messages)}")
+    print(f"📨 Total messages fetched: {len(messages)}")
 
-    TARGET_BUTTON_RAW = "‎تایید اکانت ☑️"
-    TARGET_BUTTON = clean(TARGET_BUTTON_RAW)
+    TARGET_KEYWORDS = [
+        "اکانت با شماره",
+        "جهت تایید اکانت"
+    ]
 
-    print("TARGET (repr):", repr(TARGET_BUTTON_RAW))
-    print("TARGET CLEAN:", repr(TARGET_BUTTON))
-    print("="*50)
+    TARGET_BUTTON = clean("‎تایید اکانت ☑️")
 
-    found_any = False
+    total_buttons = 0
+    matched_messages = 0
+    clicked = 0
+
+    print("\n================ DEBUG START ================\n")
 
     for i, msg in enumerate(messages):
-        print(f"\n--- Message #{i} ---")
+        print(f"\n🔹 Message #{i}")
 
-        if not msg.buttons:
-            print("No buttons")
+        if not msg.text:
+            print("No text")
             continue
 
-        print("Buttons found!")
+        print("TEXT:", msg.text[:100])
 
-        for r, row in enumerate(msg.buttons):
-            for c, btn in enumerate(row):
-                try:
-                    print(f"[Row {r} Col {c}]")
-                    print("BTN TEXT:", btn.text)
-                    print("BTN REPR:", repr(btn.text))
-                    print("BTN CLEAN:", repr(clean(btn.text)))
+        # ✅ message match
+        if all(k in msg.text for k in TARGET_KEYWORDS):
+            print("✅ TARGET MESSAGE MATCHED")
+            matched_messages += 1
 
-                    if btn.text and clean(btn.text) == TARGET_BUTTON:
-                        print(">>> MATCH FOUND! CLICKING...")
-                        await msg.click(text=btn.text)
-                        found_any = True
+            if not msg.buttons:
+                print("❌ No buttons in this message")
+                print("RAW BUTTONS:", msg.buttons)
+                continue
+
+            print("✅ Buttons found!")
+
+            for r, row in enumerate(msg.buttons):
+                for c, btn in enumerate(row):
+                    total_buttons += 1
+
+                    print(f"\n   ➤ Button [{r},{c}]")
+                    print("   TEXT:", btn.text)
+                    print("   REPR:", repr(btn.text))
+                    print("   CLEAN:", clean(btn.text))
+
+                    # 🔥 TRY 1: exact text match
+                    try:
+                        if clean(btn.text) == TARGET_BUTTON:
+                            print("   🎯 MATCHED TARGET BUTTON!")
+                            await msg.click(text=btn.text)
+                            print("   ✅ CLICKED (text match)")
+                            clicked += 1
+                            await asyncio.sleep(2)
+                            continue
+                    except Exception as e:
+                        print("   ❌ Text click error:", e)
+
+                    # 🔥 TRY 2: click by index
+                    try:
+                        print("   ⚡ Trying index click...")
+                        await msg.click(r, c)
+                        print("   ✅ CLICKED (index)")
+                        clicked += 1
                         await asyncio.sleep(2)
-                    else:
-                        print("Not matched")
+                        continue
+                    except Exception as e:
+                        print("   ❌ Index click error:", e)
 
-                    print("-"*30)
+                    # 🔥 TRY 3: first button fallback
+                    try:
+                        print("   ⚡ Trying fallback click(0)...")
+                        await msg.click(0)
+                        print("   ✅ CLICKED (fallback)")
+                        clicked += 1
+                        await asyncio.sleep(2)
+                        continue
+                    except Exception as e:
+                        print("   ❌ Fallback error:", e)
 
-                except Exception as e:
-                    print("Error:", e)
+        else:
+            print("Not target message")
 
-    if not found_any:
-        print("\n❌ No matching button found!")
+    print("\n================ SUMMARY ================\n")
+    print(f"Matched messages: {matched_messages}")
+    print(f"Total buttons seen: {total_buttons}")
+    print(f"Total clicks done: {clicked}")
 
-    print("\nDONE. Script will exit now.")
+    print("\nDONE. Script exiting.\n")
+
     await client.disconnect()
 
 
