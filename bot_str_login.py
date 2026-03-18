@@ -630,6 +630,7 @@ async def login_bot():
             ssn_str = ssn_hash.get(f"{phn}_ssn")
             p_c_hash = ssn_hash.get(f"{phn}_hash")
 
+            r_code = re.findall(r'\d', r_code)
             if not ssn_str is None and not p_c_hash is None:
                 if 'otp' in msg and len(r_code) == 5 and r_code.isdigit():
                     await try_login_2fa(client,event,ssn_str,phn,r_code,p_c_hash)
