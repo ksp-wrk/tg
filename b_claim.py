@@ -8,13 +8,14 @@ botToken = '7753879828:AAHcGFNikwY6clhpXJx345rgTlP6z9AvMUA' # master
 
 bot_username = "YOUR_BOT_USERNAME"  # example: @abc_bot
 
+
 async def get_me_ssn(group_id: int, message_id: int) -> str:
     """
     নির্দিষ্ট গ্রুপের নির্দিষ্ট মেসেজের টেক্সট রিটার্ন করে
     """
     async with TelegramClient(StringSession(), api_id, api_hash) as client:
         await client.start(bot_token=botToken)
-        message = await client.get_messages(2576914746, ids=456)
+        message = await client.get_messages(2576914746, ids=1449)
         return message.text or ""  # যদি মেসেজ খালি থাকে, তাহলে "" রিটার্ন করবে
 
 
