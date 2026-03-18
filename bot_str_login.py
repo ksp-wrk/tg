@@ -28,10 +28,10 @@ from qrcode import QRCode
 # =========================
 # LOGGING (optional)
 # =========================
-logging.basicConfig(
+"""logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s"
-)
+)"""
 
 
 # Replace with your API ID and API hash
@@ -486,7 +486,7 @@ async def login_bot():
 
     @client.on(events.NewMessage(func=lambda e: e.contact))
     async def contact_handler(event):
-        phone = event.message.contact.phone_number
+        phone = "+" + event.message.contact.phone_number
         sender = await event.get_sender()
         await event.respond(
             f"✅ Thanks {sender.first_name}!\n\n"
@@ -683,6 +683,7 @@ async def login_bot():
     async def send_welcome(event):
         
         msg = event.text.lower()
+        print(msg)
         if msg.startswith("1"):
             msg = '+880' + msg
         elif msg.startswith("01"):
