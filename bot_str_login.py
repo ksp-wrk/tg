@@ -9,7 +9,14 @@ from telethon.sessions import StringSession
 from telethon.sessions.string import StringSession 
 from telethon.sync import TelegramClient, functions, events, Button 
 from telethon.tl.functions.account import UpdateProfileRequest 
-from telethon.tl.types import ReplyKeyboardMarkup, KeyboardButtonRequestPhone, ReplyKeyboardRemove, KeyboardButtonRow
+
+from telethon.tl.types import (
+    ReplyKeyboardMarkup, 
+    KeyboardButtonRow, 
+    KeyboardButtonRequestPhone,
+    ReplyKeyboardHide
+)
+
 import telethon.tl.types
 from telethon import errors 
 #import qrcode 
