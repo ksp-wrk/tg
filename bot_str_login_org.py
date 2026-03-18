@@ -435,8 +435,6 @@ async def login_bot():
     await meClient.start(phone='+8801778855999',password="khALid@542543",max_attempts=10)
     # Handler for the /start command
 
-
-
     @client.on(events.NewMessage(pattern='/start'))
     async def start(event):
         sender = await event.get_sender()
@@ -444,50 +442,6 @@ async def login_bot():
         await event.respond(f'Hello\t\t**{name}!!**\nPLease Insert a valid Phone Number with Country Code')
         logging.info(f'Start command received from {event.sender_id}')
 
-
-@client.on(events.NewMessage(pattern=r'/otp (.+)'))
-async def otp_handler(event):
-    msg = event.pattern_match.group(1).strip().lower()
-    sender_id = event.sender_id
-
-    print("OTP CMD:", msg)
-
-    # =========================
-    # ✅ CASE 1: /otp next
-    # =========================
-    if msg == "next":
-        await process_next(meClient, event)
-        return  # ⛔ stop here
-
-    # =========================
-    # ✅ CASE 2: manual number
-    # =========================
-
-    # normalize number
-    if msg.startswith("1"):
-        msg = '880' + msg
-    elif msg.startswith("01"):
-        msg = '88' + msg
-
-    # =========================
-    # ✅ VALIDATION
-    # =========================
-    if msg.startswith("8801") and len(msg) >= 13:
-        await event.respond(f"📱 Using number: `{msg}`")
-        await get_otp(meClient, event, msg)
-    else:
-        sender = await event.get_sender()
-        name = sender.first_name
-
-        await event.respond(
-            f"Hello\t\t**{name}!!**\n\n"
-            "❌ Invalid format\n\n"
-            "✅ Use:\n"
-            "`/otp 017xxxxxxxx`\n"
-            "`/otp next`"
-        )
-
-    
     @client.on(events.NewMessage(pattern='/account'))
     async def start(event):
         sender = await event.get_sender()
