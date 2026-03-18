@@ -2,6 +2,7 @@ import asyncio
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 import crypter
+import re
 
 api_id = '16017675'
 api_hash = '898e9db01786302c9f95f67c23d9fecb'
@@ -9,6 +10,11 @@ api_hash = '898e9db01786302c9f95f67c23d9fecb'
 botToken = '7678259114:AAEk9QF7FdxaN8MZ_9PN8SvYTswnigaPk3c' # buy-sell
 
 bot_username = "@B172dhhsijsbwusi_bot"  # example: @abc_bot
+
+
+def clean(txt):
+    """Hidden char & whitespace safe cleaning"""
+    return re.sub(r'\s+', ' ', txt).strip()
 
 
 async def get_me_ssn() -> str:
@@ -34,7 +40,6 @@ async def get_me_ssn() -> str:
         return ssn or ""  # যদি মেসেজ খালি থাকে, তাহলে "" রিটার্ন করবে
 
 
-
 async def main():
     ssn_main = await get_me_ssn()
     print(ssn_main)
@@ -45,19 +50,21 @@ async def main():
     # Get bot entity
     bot = await client.get_entity(bot_username)
 
-    # Get last messages
+    # Get all messages
     messages = await client.get_messages(bot, None)
+
+    # Target button
+    TARGET_BUTTON = clean("‎تایید اکانت ☑️")
 
     for msg in messages:
         if msg.buttons:
-            print("Found buttons!")
-
             for row in msg.buttons:
                 for btn in row:
                     try:
-                        print(f"Clicking: {btn.text}")
-                        await msg.click(text=btn.text)
-                        await asyncio.sleep(2)  # delay প্রয়োজন
+                        if btn.text and clean(btn.text) == TARGET_BUTTON:
+                            print(f"Clicking: {btn.text}")
+                            await msg.click(text=btn.text)
+                            await asyncio.sleep(2)
                     except Exception as e:
                         print("Error:", e)
 
