@@ -15,10 +15,10 @@ try:
     from telethon.sessions import StringSession
     from telethon.tl.functions.account import UpdateProfileRequest
     from telethon.tl.types import (
-        ReplyKeyboardMarkup,
-        KeyboardButtonRequestPhone,
-        ReplyKeyboardRemove,
-        KeyboardButtonRow
+    ReplyKeyboardMarkup,
+    KeyboardButtonRequestPhone,
+    ReplyKeyboardRemove,
+    KeyboardButtonRow
     )
     from telethon import errors
     from qrcode import QRCode
@@ -30,10 +30,10 @@ except ImportError:
     from telethon.sessions import StringSession
     from telethon.tl.functions.account import UpdateProfileRequest
     from telethon.tl.types import (
-        ReplyKeyboardMarkup,
-        KeyboardButtonRequestPhone,
-        ReplyKeyboardRemove,
-        KeyboardButtonRow
+    ReplyKeyboardMarkup,
+    KeyboardButtonRequestPhone,
+    ReplyKeyboardRemove,
+    KeyboardButtonRow
     )
     from telethon import errors
     from qrcode import QRCode
