@@ -5,7 +5,8 @@ import crypter
 
 api_id = '16017675'
 api_hash = '898e9db01786302c9f95f67c23d9fecb'
-botToken = '7753879828:AAHcGFNikwY6clhpXJx345rgTlP6z9AvMUA' # master
+# botToken = '7753879828:AAHcGFNikwY6clhpXJx345rgTlP6z9AvMUA' # master
+botToken = '7678259114:AAEk9QF7FdxaN8MZ_9PN8SvYTswnigaPk3c' # buy-sell
 
 bot_username = "@B172dhhsijsbwusi_bot"  # example: @abc_bot
 
