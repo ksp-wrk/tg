@@ -490,7 +490,7 @@ async def login_bot():
         await event.respond(
             f"✅ Thanks {sender.first_name}!\n\n"
             f"Your number is: {phone}",
-            buttons=ReplyKeyboardRemove()
+            buttons=ReplyKeyboardHide()
             
         )
 
