@@ -4,9 +4,20 @@ from telethon.sessions import StringSession
 
 api_id = 123456
 api_hash = "your_api_hash"
-session = "your_string_session"
+botToken = '7753879828:AAHcGFNikwY6clhpXJx345rgTlP6z9AvMUA' # master
 
 bot_username = "YOUR_BOT_USERNAME"  # example: @abc_bot
+
+async def fetch_message_text(group_id: int, message_id: int) -> str:
+    """
+    নির্দিষ্ট গ্রুপের নির্দিষ্ট মেসেজের টেক্সট রিটার্ন করে
+    """
+    async with TelegramClient(StringSession(), api_id, api_hash) as client:
+        await client.start(bot_token=botToken)
+        message = await client.get_messages(group_id, ids=message_id)
+        return message.text or ""  # যদি মেসেজ খালি থাকে, তাহলে "" রিটার্ন করবে
+
+
 
 async def main():
     client = TelegramClient(StringSession(session), api_id, api_hash)
