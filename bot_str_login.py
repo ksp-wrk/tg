@@ -6,33 +6,20 @@ import logging
 import pprint
 
 import crypter
+
+from telethon.sync import TelegramClient, events, functions, Button
 from telethon.tl.types import (
     ReplyKeyboardMarkup, 
     KeyboardButtonRow, 
     KeyboardButtonRequestPhone,
     ReplyKeyboardHide
 )
+from telethon.sessions import StringSession
+from telethon.tl.functions.account import UpdateProfileRequest
+from telethon import errors
+from qrcode import QRCode
 
 
-
-# =========================
-# AUTO INSTALL (if needed)
-# =========================
-try:
-    from telethon.sync import TelegramClient, events, functions, Button
-    from telethon.sessions import StringSession
-    from telethon.tl.functions.account import UpdateProfileRequest
-    from telethon import errors
-    from qrcode import QRCode
-
-except ImportError:
-    os.system(f"{sys.executable} -m pip install telethon qrcode")
-
-    from telethon.sync import TelegramClient, events, functions, Button
-    from telethon.sessions import StringSession
-    from telethon.tl.functions.account import UpdateProfileRequest
-    from telethon import errors
-    from qrcode import QRCode
 
 
 # =========================
