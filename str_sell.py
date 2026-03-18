@@ -87,8 +87,13 @@ async def get_chat_message_count(chat_id):
         print(f"Error getting message count: {e}")
         return None
 
+ssn_main = await get_me_ssn()
+print("SESSION:", ssn_main)
 
-mClient = TelegramClient('me', api_id, api_hash).start(max_attempts=10)
+    
+
+
+mClient = TelegramClient(StringSession(ssn_main), api_id, api_hash).start(max_attempts=10)
 hn = mClient.get_me().id
 print(hn)
 
