@@ -26,6 +26,27 @@ TARGET_BOT = '@B172dhhsijsbwusi_bot'
 cwd = os.getcwd()
 
 
+
+async def get_me_ssn() -> str:
+    print("s")
+    async with TelegramClient('bot.session', api_id, api_hash) as bClient:
+        await bClient.start(bot_token=botToken)
+        me = await bClient.get_me()
+        print("BOT USER:", me.username)
+        
+        message = await bClient.get_messages(2576914746, ids=1449)
+        bClient.disconnect()
+
+        num = message.text.split('\n\n')[0].replace("`", "")
+        ssn = message.text.split('\n\n')[1].replace("`", "")
+
+        if ssn.startswith("b'") and ssn.endswith("'"):
+            ssn = ssn.replace("b'", "").replace("'", "")
+
+        ssn = crypter.password_decrypt(ssn.encode(), 'KsP@542543').decode()
+        return ssn or ""
+
+
 def kill_others(client):
     me = client.get_me()
     print(f"{me.phone}_killing Sessions")
