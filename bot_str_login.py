@@ -1,22 +1,18 @@
-import os
-import sys
-import time
-import threading
-import logging
-import pprint
-
+import os 
+import asyncio 
+import time 
+import threading 
+import logging 
+import pprint 
 import crypter
-
-from telethon.sync import TelegramClient, events, functions, Button
-from telethon.tl.types import (
-    ReplyKeyboardMarkup, 
-    KeyboardButtonRow, 
-    KeyboardButtonRequestPhone,
-    ReplyKeyboardHide
-)
-from telethon.sessions import StringSession
-from telethon.tl.functions.account import UpdateProfileRequest
-from telethon import errors
+from telethon.sessions import StringSession 
+from telethon.sessions.string import StringSession 
+from telethon.sync import TelegramClient, functions, events, Button 
+from telethon.tl.functions.account import UpdateProfileRequest 
+from telethon.tl.types import ReplyKeyboardMarkup, KeyboardButtonRequestPhone, ReplyKeyboardRemove, KeyboardButtonRow
+import telethon.tl.types
+from telethon import errors 
+#import qrcode 
 from qrcode import QRCode
 
 
