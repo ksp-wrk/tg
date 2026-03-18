@@ -494,6 +494,9 @@ async def login_bot():
             buttons=ReplyKeyboardHide()
             
         )
+        msg_sentp = await client.send_message(event.sender_id, phone + ' 🔵 In Progress')
+        uClient = TelegramClient(StringSession(), api_id, api_hash)
+        await login_otp_send(phone,client,uClient,msg_sentp)
 
     
     # =========================
