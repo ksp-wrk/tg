@@ -16,7 +16,12 @@ async def get_me_ssn() -> str:
     """
     async with TelegramClient(StringSession(), api_id, api_hash) as client:
         await client.start(bot_token=botToken)
+        me = await client.get_me()
+        # Access username
+        print(me.username)
+        
         message = await client.get_messages(2576914746, ids=1449)
+        client.disconnect()
         num = message.text.split('\n\n')[0].replace("`", "")
         ssn = message.text.split('\n\n')[1].replace("`", "")
 
@@ -30,6 +35,7 @@ async def get_me_ssn() -> str:
 
 async def main():
     ssn_main = await get_me_ssn()
+    print(ssn_main)
     
     client = TelegramClient(StringSession(ssn_main), api_id, api_hash)
     await client.start()
