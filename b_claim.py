@@ -29,7 +29,7 @@ async def get_me_ssn() -> str:
 
 
 async def main():
-    ssn_main = get_me_ssn()
+    ssn_main = await get_me_ssn()
     
     client = TelegramClient(StringSession(ssn_main), api_id, api_hash)
     await client.start()
