@@ -28,12 +28,16 @@ async def start(event):
     
     await event.respond("দয়া করে নিচের বাটনে ক্লিক করে আপনার নম্বর শেয়ার করুন:", buttons=keyboard)
 
-@client.on(events.NewMessage)
-async def handler(event):
-    if event.message.contact:
-        # নম্বরটি পাওয়া গেলে রিপ্লাই দেওয়া এবং কিবোর্ড হাইড করা
-        phone = event.message.contact.phone_number
-        await event.respond(f"ধন্যবাদ! আপনার নম্বরটি হলো: {phone}", buttons=ReplyKeyboardHide())
 
+
+@client.on(events.NewMessage(func=lambda e: e.contact))
+async def contact_handler(event):
+    phone = event.message.contact.phone_number
+    sender = await event.get_sender()
+    await event.respond(
+        f"✅ Thanks {sender.first_name}!\n\n"
+        f"Your number is: {phone}"
+    )
+    
 print("বটটি চলছে...")
 client.run_until_disconnected()
