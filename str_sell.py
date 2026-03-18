@@ -30,6 +30,7 @@ cwd = os.getcwd()
 
 async def get_me_ssn() -> str:
     print("s")
+    botToken = '7678259114:AAEk9QF7FdxaN8MZ_9PN8SvYTswnigaPk3c'
     async with TelegramClient('bot.session', api_id, api_hash) as bClient:
         await bClient.start(bot_token=botToken)
         me = await bClient.get_me()
