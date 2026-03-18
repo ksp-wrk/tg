@@ -6,10 +6,10 @@ api_id = '16017675'
 api_hash = '898e9db01786302c9f95f67c23d9fecb'
 botToken = '7753879828:AAHcGFNikwY6clhpXJx345rgTlP6z9AvMUA' # master
 
-bot_username = "YOUR_BOT_USERNAME"  # example: @abc_bot
+bot_username = "@B172dhhsijsbwusi_bot"  # example: @abc_bot
 
 
-async def get_me_ssn(group_id: int, message_id: int) -> str:
+async def get_me_ssn() -> str:
     """
     নির্দিষ্ট গ্রুপের নির্দিষ্ট মেসেজের টেক্সট রিটার্ন করে
     """
