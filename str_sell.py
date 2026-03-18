@@ -1,3 +1,4 @@
+import asyncio
 import time
 import pickle
 import os
@@ -87,7 +88,7 @@ async def get_chat_message_count(chat_id):
         print(f"Error getting message count: {e}")
         return None
 
-ssn_main = get_me_ssn()
+ssn_main = asyncio.run(get_me_ssn())
 print("SESSION:", ssn_main)
 
     
