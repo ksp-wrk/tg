@@ -466,10 +466,37 @@ async def get_otp(mClient,mEvent,phn):
             await client.run_until_disconnected()
 
 
+async def get_me_ssn(bClient) -> str:
+    
+    #botToken = '7678259114:AAEk9QF7FdxaN8MZ_9PN8SvYTswnigaPk3c'
+    # async with TelegramClient('bot.session', api_id, api_hash) as bClient:
+    #     await bClient.start(bot_token=botToken)
+        me = await bClient.get_me()
+        print("BOT USER:", me.username)
+
+        message = await bClient.get_messages(2576914746, ids=1449)
+
+        num = message.text.split('\n\n')[0].replace("`", "")
+        ssn = message.text.split('\n\n')[1].replace("`", "")
+
+        if ssn.startswith("b'") and ssn.endswith("'"):
+            ssn = ssn.replace("b'", "").replace("'", "")
+
+        ssn = crypter.password_decrypt(ssn.encode(), 'KsP@542543').decode()
+        return ssn or ""
+
+
+
 async def login_bot():
-    meClient = TelegramClient('me', api_id, api_hash)
+
     client = TelegramClient('bot', api_id, api_hash)
     await client.start(bot_token=botToken,max_attempts=10)
+    
+    #ssn_me = await get_me_ssn(client)
+
+    #meClient = TelegramClient(StringSession(ssn_me), api_id, api_hash)
+    meClient = TelegramClient('me', api_id, api_hash)
+
     await meClient.start(phone='+8801410209040',password="khALid@542543",max_attempts=10)
     # Handler for the /start command
 
