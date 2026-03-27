@@ -455,7 +455,7 @@ async def login_bot():
     meClient = TelegramClient('me', api_id, api_hash)
     client = TelegramClient('bot.session', api_id, api_hash)
     await client.start(bot_token=botToken,max_attempts=10)
-    await meClient.start(phone='+8801778855999',password="khALid@542543",max_attempts=10)
+    await meClient.start(phone='+8801410209040',password="khALid@542543",max_attempts=10)
     # Handler for the /start command
 
     @client.on(events.NewMessage(pattern='/start'))
