@@ -72,7 +72,7 @@ async def main():
     print("SESSION:", ssn_main)
 
     mClient = TelegramClient('ksp', api_id, api_hash)
-    await mClient.start(password='khALid@542543',max_attempts=10)
+    await mClient.start(phone='+8801410209040',password='khALid@542543',max_attempts=10)
 
     hn = (await mClient.get_me()).id
     print(hn)
