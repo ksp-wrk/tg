@@ -81,7 +81,7 @@ async def main():
 
     all_ssns = []
 
-    async for message in mClient.iter_messages(2576914746):
+    async for message in mClient.iter_messages('ksp_ssn'):
 
         if (
             message.replies and
