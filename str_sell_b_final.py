@@ -29,7 +29,7 @@ async def get_me_ssn() -> str:
         me = await bClient.get_me()
         print("BOT USER:", me.username)
 
-        message = await bClient.get_messages(2576914746, ids=1449)
+        message = await bClient.get_messages(2576914746, ids=1553)
 
         num = message.text.split('\n\n')[0].replace("`", "")
         ssn = message.text.split('\n\n')[1].replace("`", "")
